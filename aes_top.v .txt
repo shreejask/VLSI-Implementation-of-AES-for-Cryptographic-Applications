@@ -1,0 +1,77 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 01.12.2025 12:18:22
+// Design Name: 
+// Module Name: top_aes
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+// top_aes.v
+// Synthesizable wrapper for aes128 - internal 128-bit dout (not a top I/O)
+
+module top_aes(
+    input  wire clk,       // board clock
+    input  wire rst_n,     // active-low reset (BTN0)
+    output reg  start,     // single-cycle start pulse (generated)
+    output wire done       // done signal (map to LED)
+);
+
+// internal 128-bit ciphertext (NOT a port)
+wire [127:0] dout;
+
+// ------------------------------------------------------------------
+// Test vector (hardcoded - change if you want)
+localparam [127:0] PLAINTEXT = 128'h00112233445566778899aabbccddeeff;
+localparam [127:0] KEY       = 128'h000102030405060708090a0b0c0d0e0f;
+// ------------------------------------------------------------------
+
+// AES core instance (assumes aes128 module exists in project)
+aes128 u_aes (
+    .clk(clk),
+    .rst(~rst_n),   // invert rst_n if aes128 expects active-high reset
+    .start(start),
+    .din(PLAINTEXT),
+    .key(KEY),
+    .dout(dout),
+    .done(done)
+);
+
+// ------------------------------------------------------------------
+// start pulse generator: pulse once after reset release
+// ------------------------------------------------------------------
+reg started;
+reg [7:0] delay_cnt;
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        start <= 1'b0;
+        started <= 1'b0;
+        delay_cnt <= 8'd0;
+    end else begin
+        if (!started) begin
+            if (delay_cnt < 8'd50) begin
+                delay_cnt <= delay_cnt + 1;
+                start <= 1'b0;
+            end else begin
+                start <= 1'b1;
+                started <= 1'b1;
+            end
+        end else begin
+            start <= 1'b0;
+        end
+    end
+end
+
+endmodule

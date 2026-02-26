@@ -1,0 +1,20 @@
+## top_aes.xdc - ALL IOSTANDARD = LVCMOS18 (user request)
+## Ports: clk, rst_n, done, start
+
+# CLOCK: sys clock on Y9
+set_property PACKAGE_PIN Y9    [get_ports clk]
+set_property IOSTANDARD LVCMOS18 [get_ports clk]
+create_clock -period 10.000 -name sys_clk -waveform {0 5} [get_ports clk]
+
+# RESET (active-low) on C18 - enable pull-up
+set_property PACKAGE_PIN C18   [get_ports rst_n]
+set_property IOSTANDARD LVCMOS18 [get_ports rst_n]
+set_property PULLUP true [get_ports rst_n]
+
+# DONE LED on U16
+set_property PACKAGE_PIN U16   [get_ports done]
+set_property IOSTANDARD LVCMOS18 [get_ports done]
+
+# START output on U17
+set_property PACKAGE_PIN U17   [get_ports start]
+set_property IOSTANDARD LVCMOS18 [get_ports start]

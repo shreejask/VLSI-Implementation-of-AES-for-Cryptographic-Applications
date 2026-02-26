@@ -1,0 +1,122 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 01.12.2025 12:10:56
+// Design Name: 
+// Module Name: tb_aes128
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+`timescale 1ns/1ps
+
+module tb_aes128;
+
+reg clk;
+reg rst;
+reg start;
+reg [127:0] din;
+reg [127:0] key;
+wire [127:0] dout;
+wire done;
+
+aes128 dut (
+    .clk(clk),
+    .rst(rst),
+    .start(start),
+    .din(din),
+    .key(key),
+    .dout(dout),
+    .done(done)
+);
+
+// clock
+initial clk = 0;
+always #5 clk = ~clk; // 10ns period
+
+// test vector
+localparam [127:0] PLAINTEXT  = 128'h3243f6a8885a308d313198a2e0370734;
+localparam [127:0] CIPHER_KEY = 128'h2b7e151628aed2a6abf7158809cf4f3c;
+localparam [127:0] EXPECT_CT  = 128'h3925841d02dc09fbdc118597196a0b32;
+
+integer timeout;
+
+initial begin
+    // waveform + include DUT internals
+    $dumpfile("aes_tb.vcd");
+    $dumpvars(0, tb_aes128, dut);
+
+    // init
+    rst = 1;
+    start = 0;
+    din = 128'h0;
+    key = 128'h0;
+    #25;
+    rst = 0;
+    #10;
+
+    // show the plaintext & key we will use
+    $display("--------------------------------------------------");
+    $display("Applying Test Vector:");
+    $display(" PLAINTEXT  = %032h", PLAINTEXT);
+    $display(" CIPHER_KEY = %032h", CIPHER_KEY);
+    $display(" Expected CT= %032h", EXPECT_CT);
+    $display("--------------------------------------------------");
+
+    // apply test vector and pulse start for 1 cycle
+    din = PLAINTEXT;
+    key = CIPHER_KEY;
+    #10;
+    start = 1;
+    #10;
+    start = 0;
+
+    // wait for done with timeout
+    timeout = 0;
+    while (!done && timeout < 2000) begin
+        #10;
+        timeout = timeout + 1;
+    end
+
+    if (!done) begin
+        $display("ERROR: Timeout, done not asserted");
+        $finish;
+    end
+
+    // small margin for stable outputs
+    #20;
+
+    // print results including DUT internals (simulation-only)
+    $display("--------------------------------------------------");
+    $display(" PLAINTEXT  = %032h", PLAINTEXT);
+    $display(" CIPHER_KEY = %032h", CIPHER_KEY);
+    $display(" Ciphertext = %032h", dout);
+    $display(" Expected   = %032h", EXPECT_CT);
+    if (dout === EXPECT_CT) $display(" TEST RESULT: PASSED");
+    else $display(" TEST RESULT: FAILED");
+    $display("--------------------------------------------------");
+
+    // print a couple of useful internal regs from DUT (simulation only)
+    $display(" DUT internal state   = %032h", dut.state);
+    $display(" DUT key_reg (last)   = %032h", dut.key_reg);
+    $display(" DUT round_key (last) = %032h", dut.round_key);
+    $display(" DUT round counter    = %0d", dut.round);
+
+    #20;
+    #20;
+    $finish;
+end
+
+endmodule
