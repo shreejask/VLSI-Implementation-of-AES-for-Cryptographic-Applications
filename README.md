@@ -11,16 +11,16 @@ The design is developed for FPGA implementation and includes the RTL design file
 
 ## Project Structure
 
-AES_FPGA_Project/
-│
-├── rtl/
-│     aes_top.v
-│
-├── constraints/
-│     aes.xdc
-│
-└── tb/
-      aes_tb.v
+The repository contains the following files:
+
+- aes_top.v  
+  Main RTL design file implementing the AES encryption module.
+
+- aes.xdc  
+  FPGA constraint file defining pin configuration and timing constraints.
+
+- aes_tb.v  
+  Testbench file used for functional simulation and verification of the AES design.
 
 ## Features
 - 128-bit AES encryption implementation
@@ -37,7 +37,7 @@ AES_FPGA_Project/
 6. Run simulation and synthesis.
 
 ## Author
-Shree
+Shreeja SK
 
 ## Description
 This project demonstrates the hardware implementation of a cryptographic encryption algorithm using VLSI design methodology and FPGA-based development flow.
